@@ -34,10 +34,10 @@ router.put("/:id", async (req, res) => {
 // delete user
 router.delete("/:id", async (req, res) => {
     if (req.body.userId === req.params.id || req.body.isAdmin) {
-        try{
+        try {
             const user = await User.findByIdAndDelete(req.params.id);
             res.status(200).json("Account has been deleted!!")
-        }catch(err){
+        } catch (err) {
             res.status(500).send(err)
         }
     } else {
@@ -46,6 +46,17 @@ router.delete("/:id", async (req, res) => {
 
 })
 // get a user
+router.get("/:id", async (req, res) => {
+    try {
+        const user = await User.findById(req.params.id)
+        // remove unneccessary properties from response
+        // spread others properties
+        const { password, updatedAt, ...other } = user._doc; //_doc carries all other objects here
+        res.status(200).json(other)
+    } catch (err) {
+        res.status(500).send(err);
+    }
+})
 // follow user
 // unfollow user
 

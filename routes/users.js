@@ -60,8 +60,6 @@ router.get("/:id", async (req, res) => {
 // follow user
 router.put("/:id/follow", async (req, res) => {
     // checked whether these users are same
-    console.log(req.body.userId, "UserID");
-    console.log(req.params.id, "Params ID")
     if (req.body.userId !== req.params.id) {
         try {
             // find user which has this id which we are trying to follow
@@ -87,5 +85,30 @@ router.put("/:id/follow", async (req, res) => {
     }
 })
 // unfollow user
+router.put("/:id/unfollow", async (req, res) => {
+    // checked whether these users are same
+    if (req.body.userId !== req.params.id) {
+        try {
+            // find user which has this id which we are trying to follow
+            const user = await User.findById(req.params.id);
+            // current user which is tring to make a request
+            const currentUser = await User.findById(req.body.userId);
 
+            // user which we are trying to follow already includes this current user as a follower
+            if (user.followers.includes(req.body.userId)) {
+                // $pull operator removes from an existing array all instances of a value or values that match a specified condition.
+                await user.updateOne({ $pull: { followers: req.body.userId } });
+                await currentUser.updateOne({ $pull: { followings: req.params.id } })
+                res.status(200).json("User has been unfollowed!!");
+            } else {
+                res.status(403).json("You already unfollowed this user!!")
+            }
+        } catch (err) {
+            res.status(500).send(err)
+        }
+    } else {
+        // if users are same
+        res.status(403).json("You cannot unfollow yourself")
+    }
+})
 module.exports = router;

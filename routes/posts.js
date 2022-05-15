@@ -1,4 +1,5 @@
 const Post = require("../models/Post");
+const User = require("../models/User");
 
 const router = require("express").Router();
 
@@ -62,14 +63,37 @@ router.put("/:id/like", async (req, res) => {
     }
 })
 //get a post
-router.get("/:id", async(req, res) => {
-    try{
+router.get("/:id", async (req, res) => {
+    try {
         const post = await Post.findById(req.params.id);
         res.status(200).json(post);
-    }catch(err){
+    } catch (err) {
         res.status(500).json(err)
     }
 })
 //get timeline posts
+router.get("/timeline/all", async (req, res) => {
+    // fetch all the posts
+    try {
+        // Promise because we have multiple promises
+        // find current user
+        const currentUser = await User.findById(req.body.userId);
+        // add all post of this current user to postArray
+        const userPosts = await Post.find({ userId: currentUser._id })
+        console.log(userPosts)
+        // find all posts of this following
+        // Promise- we are gonna use map here if we use await inside map, its not gonna fetch all
+        const friendsPost = await Promise.all(
+            currentUser.followings.map((friendId) => {
+                return Post.find({ userId: friendId })
+            })
+        )
+        console.log(friendsPost, "friendsPost")
+        // concat these two arrays- takes all posts of friends and concats in userposts
+        res.json(userPosts.concat(...friendsPost))
+    } catch (err) {
+        res.status(500).json(err)
+    }
+})
 
 module.exports = router;

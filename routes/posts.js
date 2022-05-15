@@ -80,7 +80,6 @@ router.get("/timeline/all", async (req, res) => {
         const currentUser = await User.findById(req.body.userId);
         // add all post of this current user to postArray
         const userPosts = await Post.find({ userId: currentUser._id })
-        console.log(userPosts)
         // find all posts of this following
         // Promise- we are gonna use map here if we use await inside map, its not gonna fetch all
         const friendsPost = await Promise.all(
@@ -88,7 +87,6 @@ router.get("/timeline/all", async (req, res) => {
                 return Post.find({ userId: friendId })
             })
         )
-        console.log(friendsPost, "friendsPost")
         // concat these two arrays- takes all posts of friends and concats in userposts
         res.json(userPosts.concat(...friendsPost))
     } catch (err) {
